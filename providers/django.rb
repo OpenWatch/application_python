@@ -26,8 +26,6 @@ action :before_compile do
 
   include_recipe 'python'
 
-  new_resource.migration_command "#{::File.join(new_resource.virtualenv, "bin", "python")} #{::File.join(new_resource.release_path, new_resource.project_name)}manage.py syncdb --noinput" if !new_resource.migration_command
-
   new_resource.symlink_before_migrate.update({
     new_resource.local_settings_base => new_resource.local_settings_file,
   })
@@ -69,6 +67,20 @@ action :before_migrate do
   else
     Chef::Log.debug("No requirements file found")
   end
+
+  tmp_virtualenv = new_resource.virtualenv
+  Chef::Log.info("Using virtualenv: #{tmp_virtualenv}")
+
+  tmp_release_path = new_resource.release_path
+  tmp_project_name = new_resource.project_name
+  Chef::Log.info("Using release path: #{tmp_release_path}")
+  Chef::Log.info("Using project name: #{tmp_project_name}")
+  path = ::File.join(tmp_release_path, tmp_project_name)
+  Chef::Log.info("Using project directory: #{path}")
+
+
+  new_resource.migration_command "#{::File.join(new_resource.virtualenv, "bin", "python")} #{path}/manage.py syncdb --noinput" if !new_resource.migration_command
+
 
 end
 
